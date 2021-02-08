@@ -103,8 +103,14 @@ func SerializeObject(mediaType string, encoder runtime.Encoder, hw http.Response
 		return
 	}
 
+
+	var gvk string
+	if object != nil && object.GetObjectKind() != nil {
+		gvk = object.GetObjectKind().GroupVersionKind().String()
+	}
+
 	// make a best effort to write the object if a failure is detected
-	utilruntime.HandleError(fmt.Errorf("apiserver was unable to write a JSON response: %v", err))
+	utilruntime.HandleError(fmt.Errorf("apiserver was unable to write a JSON response: %v. MediaType: %v, req url: %v, objectgvk: %v ", err, mediaType, req.URL, gvk))
 	status := ErrorToAPIStatus(err)
 	candidateStatusCode := int(status.Code)
 	// if the current status code is successful, allow the error's status code to overwrite it
